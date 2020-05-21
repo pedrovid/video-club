@@ -1,5 +1,6 @@
 const express = require('express');
 const { Movie } = require('../db')
+const { Actor } = require('../db')
 
 
 //Crea un elemento /create
@@ -15,11 +16,28 @@ function create(req, res, next) {
 }
 
 function list(req, res, next){
-  Movie.findAll({})
+  Movie.findAll(
+    {
+      include:['genre', 'director', 'actors']
+    }
+  )
     .then(objects => res.json(objects));
+}
+
+function addActor(req, res, next){
+  let id = req.body.id;
+  let actorId = req.body.actorId;
+  Movie.findByPk(id, {})
+    .then((movie)=>{
+      Actor.findByPk(actorId,{})
+        .then((actor)=>{
+          movie.addActor(actor);
+          res.json(movie);
+        })
+    });
 }
 
 
 module.exports = {
-create, list
+create, list, addActor
 }
